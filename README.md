@@ -1,5 +1,7 @@
 # Sagittarius SDK (K1 Robotic Arm)
 
+This is a curated fork of the [original repo](https://github.com/NXROBO/sagittarius_sdk)
+
 ## Development Guide
 
 ### Build
@@ -30,3 +32,4 @@ $ make -j10
 ```bash
 {2, 1.4, 1.8, 2.9, 1.6, 3.1};
 ```
+
