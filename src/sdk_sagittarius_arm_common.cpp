@@ -19,7 +19,7 @@ namespace sdk_sagittarius_arm
         mThrcv(NULL)
     {
         /*Initialize receive buffer*/
-        memset(mRecvBuffer, RECV_BUFFER_SIZE, 0);
+        memset(mRecvBuffer, 0, RECV_BUFFER_SIZE);
         mDataLength = 0;
     }
 
