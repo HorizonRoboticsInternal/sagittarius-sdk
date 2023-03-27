@@ -43,7 +43,7 @@ message(STATUS "Architecture detected as ${ARCHITECTURE}")
 
 include_directories(include)
 
-find_package(Boost REQUIRED COMPONENTS system)
+find_package(Boost REQUIRED COMPONENTS system thread)
 find_package(Eigen3 REQUIRED NO_MODULE)
 
 #############################################################
@@ -64,3 +64,6 @@ target_sources(sagittarius_sdk
     src/sdk_sagittarius_arm_real.cpp)
 target_link_libraries(sagittarius_sdk PUBLIC Eigen3::Eigen Boost::system)
     
+if (INCLUDE_EXAMPLES)
+    add_subdirectory(examples)
+endif()
