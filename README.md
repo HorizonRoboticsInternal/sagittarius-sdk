@@ -1,2 +1,3 @@
-# sagittarius_sdk
-SDK for the K1 (Sagittarius) robotic arm
+# Sagittarius SDK
+
+C++ SDK for the K1 (Sagittarius) robotic arm
