@@ -1,12 +1,12 @@
 #ifndef SDK_ARM_COMMON_SERIAL__
 #define SDK_ARM_COMMON_SERIAL__
 
-#include "sdk_sagittarius_arm_constants.h"
+#include "sdk_sagittarius_arm/sdk_sagittarius_arm_constants.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "sdk_sagittarius_arm_common.h"
+#include "sdk_sagittarius_arm/sdk_sagittarius_arm_common.h"
 
 namespace sdk_sagittarius_arm
 {

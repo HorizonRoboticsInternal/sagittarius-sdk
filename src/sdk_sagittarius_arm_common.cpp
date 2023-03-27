@@ -4,8 +4,8 @@
  * All rights reserved.
  * Author: litian.zhuang  <litian.zhuang@nxrobo.com>
  */
-#include <sdk_sagittarius_arm/sdk_sagittarius_arm_common.h>
-#include <sdk_sagittarius_arm/sdk_sagittarius_arm_log.h>
+#include "sdk_sagittarius_arm/sdk_sagittarius_arm_common.h"
+#include "sdk_sagittarius_arm/sdk_sagittarius_arm_log.h"
 
 #include <cstdio>
 #include <cstring>

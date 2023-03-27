@@ -1,7 +1,7 @@
 #ifndef SDK_SAGITTARIUS_ARM_REAL_
 #define SDK_SAGITTARIUS_ARM_REAL_
-#include <sdk_sagittarius_arm/modern_robotics.h>
-#include <sdk_sagittarius_arm/sdk_sagittarius_arm_common_serial.h>
+#include "sdk_sagittarius_arm/modern_robotics.h"
+#include "sdk_sagittarius_arm/sdk_sagittarius_arm_common_serial.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

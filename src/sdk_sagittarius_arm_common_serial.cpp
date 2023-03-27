@@ -4,11 +4,11 @@
  * All rights reserved.
  * Author: litian.zhuang  <litian.zhuang@nxrobo.com>
  */
+#include "sdk_sagittarius_arm/sdk_sagittarius_arm_common_serial.h"
+#include "sdk_sagittarius_arm/sdk_sagittarius_arm_log.h"
 #include <algorithm>
 #include <boost/asio.hpp>
 #include <iterator>
-#include <sdk_sagittarius_arm/sdk_sagittarius_arm_common_serial.h>
-#include <sdk_sagittarius_arm/sdk_sagittarius_arm_log.h>
 
 namespace sdk_sagittarius_arm
 {
