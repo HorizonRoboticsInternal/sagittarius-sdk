@@ -50,20 +50,63 @@ find_package(Eigen3 REQUIRED NO_MODULE)
 # Targets                                                   #
 #############################################################
 
-add_library(sagittarius_sdk SHARED)
-target_include_directories(sagittarius_sdk
+add_library(sdk_sagittarius_arm_constants INTERFACE)
+target_sources(
+    sdk_sagittarius_arm_constants
     PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include/sdk_sagittarius_arm/sdk_sagittarius_arm_constants.h>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/sdk_sagittarius_arm/sdk_sagittarius_arm_constants.h>)
+
+add_library(modern_robotics STATIC)
+target_sources(modern_robotics
+    PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include/sdk_sagittarius_arm/modern_robotics.h>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/sdk_sagittarius_arm/modern_robotics.h>
+    PRIVATE src/modern_robotics.cpp)
+target_link_libraries(modern_robotics PUBLIC Eigen3::Eigen)
+
+add_library(sdk_sagittarius_arm_log STATIC)
+target_sources(sdk_sagittarius_arm_log
+    PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include/sdk_sagittarius_arm/sdk_sagittarius_arm_log.h>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/sdk_sagittarius_arm/sdk_sagittarius_arm_log.h>
+    PRIVATE src/sdk_sagittarius_arm_log.cpp)
+target_link_libraries(sdk_sagittarius_arm_log PUBLIC sdk_sagittarius_arm_constants)
+
+add_library(sdk_sagittarius_arm_common STATIC)
+target_sources(sdk_sagittarius_arm_common
+    PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include/sdk_sagittarius_arm/sdk_sagittarius_arm_common.h>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/sdk_sagittarius_arm/sdk_sagittarius_arm_common.h>
+    PRIVATE src/sdk_sagittarius_arm_common.cpp)
+target_link_libraries(sdk_sagittarius_arm_common
+    PUBLIC sdk_sagittarius_arm_constants sdk_sagittarius_arm_log Boost::system Boost::thread)
+
+add_library(sdk_sagittarius_arm_common_serial STATIC)
+target_sources(sdk_sagittarius_arm_common_serial
+    PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include/sdk_sagittarius_arm/sdk_sagittarius_arm_common_serial.h>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/sdk_sagittarius_arm/sdk_sagittarius_arm_common_serial.h>
+    PRIVATE src/sdk_sagittarius_arm_common_serial.cpp)
+target_link_libraries(sdk_sagittarius_arm_common_serial
+    PUBLIC
+    Boost::system
+    sdk_sagittarius_arm_constants
+    sdk_sagittarius_arm_common
+    sdk_sagittarius_arm_log)
+
+add_library(sagittarius_sdk SHARED)
 target_sources(sagittarius_sdk
-    PRIVATE
-    src/modern_robotics.cpp
-    src/sdk_sagittarius_arm_log.cpp
-    src/sdk_sagittarius_arm_common.cpp
-    src/sdk_sagittarius_arm_common_serial.cpp
-    src/sdk_sagittarius_arm_real.cpp)
-target_link_libraries(sagittarius_sdk PUBLIC Eigen3::Eigen Boost::system)
-    
+    PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include/sdk_sagittarius_arm/sdk_sagittarius_arm_real.h>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/sdk_sagittarius_arm/sdk_sagittarius_arm_real.h>
+    PRIVATE src/sdk_sagittarius_arm_real.cpp)
+target_link_libraries(sagittarius_sdk
+    PUBLIC
+    modern_robotics
+    sdk_sagittarius_arm_common_serial
+    sdk_sagittarius_arm_log)
+
 if (INCLUDE_EXAMPLES)
     add_subdirectory(examples)
 endif()

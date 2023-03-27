@@ -6,8 +6,6 @@
  */
 #include <algorithm>
 #include <boost/asio.hpp>
-#include <boost/lambda/lambda.hpp>
-#include <boost/lexical_cast.hpp>
 #include <iterator>
 #include <sdk_sagittarius_arm/sdk_sagittarius_arm_common_serial.h>
 #include <sdk_sagittarius_arm/sdk_sagittarius_arm_log.h>

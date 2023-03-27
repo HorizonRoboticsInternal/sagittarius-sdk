@@ -4,10 +4,10 @@
  * All rights reserved.
  * Author: litian.zhuang  <litian.zhuang@nxrobo.com>
  */
+#include "sdk_sagittarius_arm/modern_robotics.h"
+#include "sdk_sagittarius_arm/sdk_sagittarius_arm_log.h"
+#include "sdk_sagittarius_arm/sdk_sagittarius_arm_real.h"
 #include <iostream>
-#include <sdk_sagittarius_arm/modern_robotics.h>
-#include <sdk_sagittarius_arm/sdk_sagittarius_arm_log.h>
-#include <sdk_sagittarius_arm/sdk_sagittarius_arm_real.h>
 
 int main(int argc, char** argv)
 {
