@@ -15,7 +15,13 @@
 #define CMD_SET_SERVO_TORQUE 0x0F //设置舵机的扭矩厌大小
 
 // 关节角度限制, 数组下标 0~5 代表关节编号 1~6, 单位是弧度
-#define JOINT_LOWER_LIMITS {-2, -1.57, -1.48, -2.9, -1.8, -3.1} // 最小角度
-#define JOINT_UPPER_LIMITS {2, 1.4, 1.8, 2.9, 1.6, 3.1} // 最大角度
+#define JOINT_LOWER_LIMITS                                                     \
+    {                                                                          \
+        -2, -1.57, -1.48, -2.9, -1.8, -3.1                                     \
+    } // 最小角度
+#define JOINT_UPPER_LIMITS                                                     \
+    {                                                                          \
+        2, 1.4, 1.8, 2.9, 1.6, 3.1                                             \
+    } // 最大角度
 
 #endif // SDK_ARM_COMMANDS_CONSTANTS_
