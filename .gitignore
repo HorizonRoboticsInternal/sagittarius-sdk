@@ -34,3 +34,6 @@
 # direnv
 .envrc
 .direnv
+
+# build
+build
