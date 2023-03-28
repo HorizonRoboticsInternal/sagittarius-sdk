@@ -2,9 +2,8 @@
 
 using horizon::sagittarius::Daemon;
 
-int main()
-{
-    Daemon daemon(30001);
-    daemon.Run();
-    return 0;
+int main() {
+  Daemon daemon(30001);
+  daemon.Run();
+  return 0;
 }
