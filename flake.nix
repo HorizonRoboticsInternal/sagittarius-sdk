@@ -55,6 +55,7 @@
           eigen
           boost
           websocketpp
+          nlohmann_json
         ];
 
         shellHook = ''
