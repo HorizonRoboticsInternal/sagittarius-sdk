@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <mutex>
+#include <vector>
 
 #include "protocols.h"
 #include "sdk_sagittarius_arm/sdk_sagittarius_arm_real.h"
@@ -36,7 +37,7 @@ class Daemon {
 
   // ---------- Processors ----------
   // Command: SETPOS
-  void SetPosition();
+  void SetPosition(const std::vector<float> &positions);
   // Command: SET_EE
   void SetEndEffector();
   // Command: STATUS

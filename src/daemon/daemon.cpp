@@ -4,6 +4,7 @@
 #include <mutex>
 #include <string_view>
 
+#include "nlohmann/json.hpp"
 #include "spdlog/spdlog.h"
 
 namespace horizon {
@@ -31,9 +32,14 @@ void Daemon::OnMessage(Connection conn,
   }
 
   const std::string_view command(payload.data(), 6);
-  if (command == "STATUS") {
+  if (command == "STATUS" || command == "status") {
     nlohmann::json status = GetStatus();
     Send(conn, status.dump());
+  } else if (command == "SETPOS" || command == "setpos") {
+    nlohmann::json json_list =
+        nlohmann::json::parse(std::string_view(payload.data() + 7, payload.data() - 7));
+    std::vector<float> positions = json_list.get<std::vector<float>>();
+    SetPosition(positions);
   } else {
     spdlog::error("Invalid command '{}'", command);
   }
@@ -78,6 +84,7 @@ void Daemon::Start(int baudrate, int velocity, int acceleration) {
   // Connect to the robotic arm
   arm_low_ = std::make_unique<sdk_sagittarius_arm::SagittariusArmReal>(
       "/dev/ttyACM0", baudrate, velocity, acceleration);
+  arm_low_->ControlTorque("lock");
 
   server_.init_asio();
   server_.listen(port_);
@@ -87,9 +94,28 @@ void Daemon::Start(int baudrate, int velocity, int acceleration) {
 }
 
 ArmStatus Daemon::GetStatus() {
-  return ArmStatus{
-      .joint_positions = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0},
+  float joints[7];
+  arm_low_->GetCurrentJointStatus(joints);
+
+  return ArmStatus  {
+      .joint_positions =
+          {joints[0], joints[1], joints[2], joints[3], joints[4], joints[5]},
+      .gripper =
+          {
+              .radian   = joints[6],
+              .distance = 0.0,
+          },
   };
+}
+
+void Daemon::SetPosition(const std::vector<float>& positions) {
+  if (positions.size() != 7) {
+    spdlog::error("SetPosition() cannot handle inputs with a size of {}",
+                  positions.size());
+    return;
+  }
+  arm_low_->SetAllServoRadian(const_cast<float*>(positions.data()));
+  arm_low_->arm_set_gripper_linear_position(positions[6]);
 }
 
 }  // namespace sagittarius
