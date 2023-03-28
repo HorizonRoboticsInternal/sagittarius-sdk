@@ -24,6 +24,9 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 option(INCLUDE_EXAMPLES
     "Should ${PROJECT_NAME} compile the examples." ON)
 
+option(BUILD_DAEMON
+    "Should ${PROJECT_NAME} compile the daemon service." ON)
+
 #############################################################
 # Detect Architecture                                       #
 #############################################################
@@ -45,7 +48,6 @@ include_directories(include)
 
 find_package(Boost REQUIRED COMPONENTS system thread)
 find_package(Eigen3 REQUIRED NO_MODULE)
-find_package(websocketpp REQUIRED)
 
 #############################################################
 # Targets                                                   #
@@ -108,10 +110,10 @@ target_link_libraries(sagittarius_sdk
     sdk_sagittarius_arm_common_serial
     sdk_sagittarius_arm_log)
 
-add_executable(sagittariusd)
-target_sources(sagittariusd PRIVATE src/sagittariusd.cpp)
-target_link_libraries(sagittariusd PRIVATE websocketpp::websocketpp)
-
 if (INCLUDE_EXAMPLES)
     add_subdirectory(examples)
+endif()
+
+if (BUILD_DAEMON)
+    add_subdirectory(src/daemon)
 endif()
