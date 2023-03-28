@@ -1,7 +1,10 @@
 #pragma once
 
+#include <memory>
 #include <mutex>
 
+#include "protocols.h"
+#include "sdk_sagittarius_arm/sdk_sagittarius_arm_real.h"
 #include "websocketpp/config/asio_no_tls.hpp"
 #include "websocketpp/server.hpp"
 
@@ -14,23 +17,38 @@ class Daemon {
   using Connection = websocketpp::connection_hdl;
 
   Daemon(int port);
-  void Run();
+
+  // @param baudrate - usually 1_000_000
+  //
+  // @prama velocity - the maximum operation velocity of the servos. The value
+  //                   should be between 0 ~ 4096. Recommended 1000.
+  //
+  // @param acceleration - The acceleration of the servo. It should take value
+  //                       between 0 and 254. Recommended <= 10.
+  void Start(int baudrate, int velocity, int acceleration);
 
  private:
   // ---------- Handlers ----------
   void OnMessage(Connection conn, websocketpp::config::asio::message_type::ptr msg);
   void OnOpen(Connection conn);
   void OnClose(Connection conn);
+  void Send(Connection conn, const std::string &message);
 
   // ---------- Processors ----------
+  // Command: SETPOS
   void SetPosition();
+  // Command: SET_EE
   void SetEndEffector();
-  void GetStatus();
+  // Command: STATUS
+  ArmStatus GetStatus();
 
   int port_;
   Server server_;
   std::mutex mutex_{};  // protects connections_ below.
   std::vector<Connection> connections_{};
+
+  // Low level arm interface.
+  std::unique_ptr<sdk_sagittarius_arm::SagittariusArmReal> arm_low_;
 };
 
 }  // namespace sagittarius

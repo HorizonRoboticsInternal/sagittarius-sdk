@@ -2,6 +2,7 @@
 
 #include <functional>
 #include <mutex>
+#include <string_view>
 
 #include "spdlog/spdlog.h"
 
@@ -22,12 +23,19 @@ Daemon::Daemon(int port) : port_(port), server_{} {
 
 void Daemon::OnMessage(Connection conn,
                        websocketpp::config::asio::message_type::ptr msg) {
-  spdlog::info("payload: {}", msg->get_payload());
+  const std::string& payload = msg->get_payload();
 
-  try {
-    server_.send(conn, msg->get_payload(), websocketpp ::frame::opcode::text);
-  } catch (websocketpp::exception const& e) {
-    spdlog::error("Failed because: {}", e.what());
+  if (payload.size() < 6) {
+    spdlog::error("Payload size too small.");
+    return;
+  }
+
+  const std::string_view command(payload.data(), 6);
+  if (command == "STATUS") {
+    nlohmann::json status = GetStatus();
+    Send(conn, status.dump());
+  } else {
+    spdlog::error("Invalid command '{}'", command);
   }
 }
 
@@ -58,12 +66,30 @@ void Daemon::OnClose(Connection conn) {
       connections_.size());
 }
 
-void Daemon::Run() {
+void Daemon::Send(Connection conn, const std::string& message) {
+  try {
+    server_.send(conn, message, websocketpp::frame::opcode::text);
+  } catch (websocketpp::exception const& e) {
+    spdlog::error("Send() failed because: {}", e.what());
+  }
+}
+
+void Daemon::Start(int baudrate, int velocity, int acceleration) {
+  // Connect to the robotic arm
+  arm_low_ = std::make_unique<sdk_sagittarius_arm::SagittariusArmReal>(
+      "/dev/ttyACM0", baudrate, velocity, acceleration);
+
   server_.init_asio();
   server_.listen(port_);
   server_.start_accept();
   spdlog::info("Websocket server listening on port {}", port_);
   server_.run();
+}
+
+ArmStatus Daemon::GetStatus() {
+  return ArmStatus{
+      .joint_positions = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0},
+  };
 }
 
 }  // namespace sagittarius
