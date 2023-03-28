@@ -15,5 +15,6 @@ target_link_libraries(daemon PUBLIC
     spdlog::spdlog)
 
 add_executable(sagittariusd)
+target_include_directories(sagittariusd PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_sources(sagittariusd PRIVATE sagittariusd.cpp)
 target_link_libraries(sagittariusd PRIVATE daemon)
