@@ -45,6 +45,7 @@ include_directories(include)
 
 find_package(Boost REQUIRED COMPONENTS system thread)
 find_package(Eigen3 REQUIRED NO_MODULE)
+find_package(websocketpp REQUIRED)
 
 #############################################################
 # Targets                                                   #
@@ -106,6 +107,10 @@ target_link_libraries(sagittarius_sdk
     modern_robotics
     sdk_sagittarius_arm_common_serial
     sdk_sagittarius_arm_log)
+
+add_executable(sagittariusd)
+target_sources(sagittariusd PRIVATE src/sagittariusd.cpp)
+target_link_libraries(sagittariusd PRIVATE websocketpp::websocketpp)
 
 if (INCLUDE_EXAMPLES)
     add_subdirectory(examples)

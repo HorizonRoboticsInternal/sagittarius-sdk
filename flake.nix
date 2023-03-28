@@ -54,6 +54,7 @@
           spdlog
           eigen
           boost
+          websocketpp
         ];
 
         shellHook = ''
