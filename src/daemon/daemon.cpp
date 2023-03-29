@@ -127,9 +127,6 @@ void Daemon::SetPosition(const std::vector<float>& positions) {
   }
   arm_low_->SetAllServoRadian(const_cast<float*>(positions.data()));
   arm_low_->arm_set_gripper_linear_position(positions[6]);
-  spdlog::info("Distance: {}, Degree: {}",
-               positions[6],
-               arm_low_->arm_calculate_gripper_degree_position(positions[6]));
 }
 
 std::vector<PositionBound> Daemon::GetBounds() {
