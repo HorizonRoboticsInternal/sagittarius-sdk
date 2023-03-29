@@ -36,6 +36,9 @@ class Daemon {
   void Send(Connection conn, const std::string &message);
 
   // ---------- Processors ----------
+  // Command: BOUNDS
+  std::vector<PositionBound> GetBounds();
+
   // Command: SETPOS
   void SetPosition(const std::vector<float> &positions);
   // Command: SET_EE

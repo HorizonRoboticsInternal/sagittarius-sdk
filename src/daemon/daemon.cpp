@@ -5,6 +5,7 @@
 #include <string_view>
 
 #include "nlohmann/json.hpp"
+#include "sdk_sagittarius_arm/sdk_sagittarius_arm_constants.h"
 #include "spdlog/spdlog.h"
 
 namespace horizon {
@@ -40,6 +41,9 @@ void Daemon::OnMessage(Connection conn,
         nlohmann::json::parse(std::string_view(payload.data() + 7, payload.data() - 7));
     std::vector<float> positions = json_list.get<std::vector<float>>();
     SetPosition(positions);
+  } else if (command == "BOUNDS" || command == "bounds") {
+    nlohmann::json bounds = GetBounds();
+    Send(conn, bounds.dump());
   } else {
     spdlog::error("Invalid command '{}'", command);
   }
@@ -97,13 +101,20 @@ ArmStatus Daemon::GetStatus() {
   float joints[7];
   arm_low_->GetCurrentJointStatus(joints);
 
-  return ArmStatus  {
+  // The conversion here is based on
+  // SagittariusArmReal::arm_calculate_gripper_degree_position()
+  double gripper_radian = static_cast<double>(joints[6]);
+  double gripper_degree = -gripper_radian / PI * 180.0;
+  float gripper_dist    = static_cast<float>(gripper_degree / 3462.0 * 2.0);
+
+  return ArmStatus{
       .joint_positions =
           {joints[0], joints[1], joints[2], joints[3], joints[4], joints[5]},
       .gripper =
           {
-              .radian   = joints[6],
-              .distance = 0.0,
+              .radian = joints[6],
+              // TODO(breakds): Compute the distance from radian
+              .distance = gripper_dist,
           },
   };
 }
@@ -116,6 +127,21 @@ void Daemon::SetPosition(const std::vector<float>& positions) {
   }
   arm_low_->SetAllServoRadian(const_cast<float*>(positions.data()));
   arm_low_->arm_set_gripper_linear_position(positions[6]);
+  spdlog::info("Distance: {}, Degree: {}",
+               positions[6],
+               arm_low_->arm_calculate_gripper_degree_position(positions[6]));
+}
+
+std::vector<PositionBound> Daemon::GetBounds() {
+  return {
+      PositionBound(arm_low_->lower_joint_limits[0], arm_low_->upper_joint_limits[0]),
+      PositionBound(arm_low_->lower_joint_limits[1], arm_low_->upper_joint_limits[1]),
+      PositionBound(arm_low_->lower_joint_limits[2], arm_low_->upper_joint_limits[2]),
+      PositionBound(arm_low_->lower_joint_limits[3], arm_low_->upper_joint_limits[3]),
+      PositionBound(arm_low_->lower_joint_limits[4], arm_low_->upper_joint_limits[4]),
+      PositionBound(arm_low_->lower_joint_limits[5], arm_low_->upper_joint_limits[5]),
+      PositionBound(-0.068, 0.0),
+  };
 }
 
 }  // namespace sagittarius

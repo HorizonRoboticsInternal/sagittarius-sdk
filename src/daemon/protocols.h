@@ -17,5 +17,14 @@ struct ArmStatus {
   NLOHMANN_DEFINE_TYPE_INTRUSIVE(ArmStatus, joint_positions, gripper);
 };
 
+struct PositionBound {
+  PositionBound(float l, float u) : lower(l), upper(u) {
+  }
+
+  float lower;
+  float upper;
+  NLOHMANN_DEFINE_TYPE_INTRUSIVE(PositionBound, lower, upper);
+};
+
 }  // namespace sagittarius
 }  // namespace horizon
