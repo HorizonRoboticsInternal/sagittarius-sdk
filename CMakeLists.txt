@@ -17,6 +17,8 @@ if (NOT CMAKE_BUILD_TYPE)
 endif()
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
+message(STATUS "Using compiler ${CMAKE_CXX_COMPILER_ID} ...")
+
 #############################################################
 # Options                                                   #
 #############################################################
