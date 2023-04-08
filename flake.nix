@@ -46,6 +46,7 @@
         packages = with pkgs-dev; [
           # C/C++ Build Tools
           llvmPackages_14.clang
+          gcc11
           cmake
           cmakeCurses
           pkgconfig
