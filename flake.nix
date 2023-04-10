@@ -12,6 +12,16 @@
       lcm = prev.lcm.overrideAttrs (old: {
         outputs = [ "out" ];
       });
+      # Explicitly use the develop branch of websocket++, because we need a fix
+      # there that makes it compile under c++20.
+      websocketpp = prev.websocketpp.overrideAttrs (old: {
+        src = prev.fetchFromGitHub {
+          owner = "zaphoyd";
+          repo = "websocketpp";
+          rev = "b9aeec6eaf3d5610503439b4fae3581d9aff08e8";  # develop branch
+          hash = "sha256-qw5AbkFdL7hQuEp0ic/7r2BvqDMGEJvAeb1CdmOpnPw=";
+        };
+      });
     };
 
     # This is the overlay that includes the final products.
@@ -41,12 +51,12 @@
           ];
         };
     in {
-      devShells.default = pkgs-dev.mkShell rec {
+      devShells.default = pkgs-dev.mkShell.override {
+        stdenv = pkgs-dev.overrideCC pkgs-dev.stdenv pkgs-dev.gcc12;
+      } rec {
         name = "sagittarius_sdk";
         packages = with pkgs-dev; [
           # C/C++ Build Tools
-          llvmPackages_14.clang
-          gcc11
           cmake
           cmakeCurses
           pkgconfig
@@ -60,8 +70,6 @@
         ];
 
         shellHook = ''
-          export CC=clang
-          export CXX=clang++
           export PS1="$(echo -e '\uf1c0') {\[$(tput sgr0)\]\[\033[38;5;228m\]\w\[$(tput sgr0)\]\[\033[38;5;15m\]} (${name}) \\$ \[$(tput sgr0)\]"
          '';
       };
