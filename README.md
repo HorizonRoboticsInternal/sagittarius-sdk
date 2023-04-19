@@ -1,6 +1,8 @@
 # Sagittarius SDK (K1 Robotic Arm)
 
-This is a curated fork of the [original repo](https://github.com/NXROBO/sagittarius_sdk)
+This is a curated fork of the original repo [sagittarius_sdk](https://github.com/NXROBO/sagittarius_sdk). The original repo is licensed under BSD and the notice is kept at the top of each of the original source files.
+
+The modification including the `CMakeLists.txt` updates, a websocket service and a Python binding are all licensed under BSD following the original repo.
 
 ## Development Guide
 
