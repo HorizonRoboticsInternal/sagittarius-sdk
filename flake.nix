@@ -67,6 +67,12 @@
           boost
           websocketpp
           nlohmann_json
+
+          # Python Environment
+          (python3.withPackages (pyPkgs: with pyPkgs; [
+            pybind11
+            numpy
+          ]))          
         ];
 
         shellHook = ''

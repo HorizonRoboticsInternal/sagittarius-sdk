@@ -119,3 +119,15 @@ endif()
 if (BUILD_DAEMON)
     add_subdirectory(src/daemon)
 endif()
+
+
+#############################################################
+# Python Bindings                                           #
+#############################################################
+
+find_package(Python3 COMPONENTS Interpreter Development REQUIRED)
+find_package(pybind11 CONFIG REQUIRED)
+
+pybind11_add_module(pysagittarius python/pysagittarius.cc)
+target_link_libraries(pysagittarius PRIVATE sagittarius_sdk)
+
