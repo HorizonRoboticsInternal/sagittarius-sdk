@@ -15,19 +15,48 @@ PYBIND11_MODULE(pysagittarius, m) {
            py::arg("x") = 0.0,
            py::arg("y") = 0.0,
            py::arg("z") = 0.0)
-      .def("solve_pos_quat",
-           [](SagittariusArmKinematics &obj,
-              py::array_t<float> position,
-              py::array_t<float> quaternion) -> py::array_t<float> {
-             auto p = position.unchecked<1>();
-             auto q = quaternion.unchecked<1>();
+      .def(
+          "solve_pos_quat",
+          [](SagittariusArmKinematics &obj,
+             py::array_t<float> position,
+             py::array_t<float> quaternion) -> py::array_t<float> {
+            auto p = position.unchecked<1>();
+            auto q = quaternion.unchecked<1>();
 
-             py::array_t<float> joints     = py::array_t<float>(7);
-             py::buffer_info joints_buffer = joints.request();
-             auto *joints_ptr              = static_cast<float *>(joints_buffer.ptr);
+            py::array_t<float> joints     = py::array_t<float>(7);
+            py::buffer_info joints_buffer = joints.request();
+            auto *joints_ptr              = static_cast<float *>(joints_buffer.ptr);
 
-             obj.getIKinThetaQuaternion(
-                 p(0), p(1), p(2), q(1), q(2), q(3), q(0), joints_ptr);
-             return joints;
-           });
+            obj.getIKinThetaQuaternion(
+                p(0), p(1), p(2), q(1), q(2), q(3), q(0), joints_ptr);
+            return joints;
+          },
+          R"pbdoc(
+              Given EE position (w.r.t. baselink) and orientation in quaternion,
+              compute joint positions
+          )pbdoc",
+          py::arg("position"),
+          py::arg("quaternion"))
+      .def(
+          "solve_pos_rpy",
+          [](SagittariusArmKinematics &obj,
+             py::array_t<float> position,
+             py::array_t<float> rpy) -> py::array_t<float> {
+            auto p     = position.unchecked<1>();
+            auto euler = rpy.unchecked<1>();
+
+            py::array_t<float> joints     = py::array_t<float>(7);
+            py::buffer_info joints_buffer = joints.request();
+            auto *joints_ptr              = static_cast<float *>(joints_buffer.ptr);
+
+            obj.getIKinThetaEuler(
+                p(0), p(1), p(2), euler(0), euler(1), euler(2), joints_ptr);
+            return joints;
+          },
+          R"pbdoc(
+              Given EE position (w.r.t. baselink) and orientation in RPY,
+              compute joint positions
+          )pbdoc",
+          py::arg("position"),
+          py::arg("quaternion"));
 }
