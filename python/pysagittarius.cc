@@ -58,5 +58,28 @@ PYBIND11_MODULE(pysagittarius, m) {
               compute joint positions
           )pbdoc",
           py::arg("position"),
-          py::arg("quaternion"));
+          py::arg("quaternion"))
+      .def(
+          "compute_pos_quat",
+          [](SagittariusArmKinematics &obj, py::array_t<float> joints) -> py::tuple {
+            py::buffer_info joints_buffer = joints.request();
+            auto *j                       = static_cast<float *>(joints_buffer.ptr);
+
+            py::array_t<float> pos     = py::array_t<float>(3);
+            py::buffer_info pos_buffer = pos.request();
+            auto *pos_ptr              = static_cast<float *>(pos_buffer.ptr);
+
+            py::array_t<float> quat     = py::array_t<float>(4);
+            py::buffer_info quat_buffer = quat.request();
+            auto *quat_ptr              = static_cast<float *>(quat_buffer.ptr);
+
+            obj.getFKinQuaternion(j, pos_ptr, quat_ptr);
+            return py::make_tuple(pos, quat);
+          },
+          R"pbdoc(
+              Given joint positions, compute the forward kinematics to deduce
+              the end effector's position and orientation (in quaternion).
+              Returns a pair of numpy arrays as position and quaternion.
+          )pbdoc",
+          py::arg("joints"));
 }
