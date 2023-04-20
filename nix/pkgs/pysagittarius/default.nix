@@ -37,5 +37,11 @@ buildPythonPackage rec {
   pythonImportsCheck = [ "pysagittarius" ];
 
   meta = with lib; {
+    homepage = "https://github.com/HorizonRoboticsInternal/sagittarius-sdk";
+    description = ''
+      Python wrapper of SDK for the K1 (Sagittarius) robotic arm
+    '';
+    platforms = with platforms; linux ++ darwin;
+    licencse = licenses.mit;
   };
 }

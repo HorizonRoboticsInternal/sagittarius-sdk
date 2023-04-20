@@ -30,7 +30,9 @@
       (final: prev: {
         sagittarius-sdk = final.callPackage ./nix/pkgs/sagittarius-sdk {};
         pythonPackagesExtensions = prev.pythonPackagesExtensions ++ [
-          # TODO(breakds): Add the final python package here.
+          (python-final: python-prev: {
+            pysagittarius = python-final.callPackage ./nix/pkgs/pysagittarius {};
+          })
         ];
       })
     ];
@@ -92,6 +94,7 @@
 
       packages = {
         default = pkgs.sagittarius-sdk;
+        pysagittarius = pkgs.python3Packages.pysagittarius;
       };
     });
 }
