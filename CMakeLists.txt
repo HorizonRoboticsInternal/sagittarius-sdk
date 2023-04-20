@@ -27,7 +27,7 @@ option(INCLUDE_EXAMPLES
     "Should ${PROJECT_NAME} compile the examples." ON)
 
 option(BUILD_DAEMON
-    "Should ${PROJECT_NAME} compile the daemon service." ON)
+    "Should ${PROJECT_NAME} compile the daemon service." OFF)
 
 #############################################################
 # Detect Architecture                                       #
@@ -125,7 +125,7 @@ endif()
 # Python Bindings                                           #
 #############################################################
 
-find_package(Python3 COMPONENTS Interpreter Development REQUIRED)
+find_package(Python3 COMPONENTS Interpreter Development.Module REQUIRED)
 find_package(pybind11 CONFIG REQUIRED)
 
 pybind11_add_module(pysagittarius python/pysagittarius.cc)
