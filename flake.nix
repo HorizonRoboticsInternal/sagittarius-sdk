@@ -50,34 +50,43 @@
             self.overlays.default
           ];
         };
+
+        mkDevShellOf = { python ? pkgs-dev.python3 }: pkgs-dev.mkShell.override {
+          stdenv = pkgs-dev.overrideCC pkgs-dev.stdenv pkgs-dev.gcc12;
+        } rec {
+          name = "sagittarius_sdk";
+          packages = with pkgs-dev; [
+            # C/C++ Build Tools
+            cmake
+            cmakeCurses
+            pkgconfig
+
+            # C++ Library
+            spdlog
+            eigen
+            boost
+            websocketpp
+            nlohmann_json
+            libxcrypt
+
+            # Python Environment
+            (python.withPackages (pyPkgs: with pyPkgs; [
+              pybind11
+              numpy
+              # Dev
+              twine
+              build
+            ]))
+          ];
+
+          shellHook = ''
+            export PS1="$(echo -e '\uf1c0') {\[$(tput sgr0)\]\[\033[38;5;228m\]\w\[$(tput sgr0)\]\[\033[38;5;15m\]} (${name}) \\$ \[$(tput sgr0)\]"
+          '';
+        };
+
     in {
-      devShells.default = pkgs-dev.mkShell.override {
-        stdenv = pkgs-dev.overrideCC pkgs-dev.stdenv pkgs-dev.gcc12;
-      } rec {
-        name = "sagittarius_sdk";
-        packages = with pkgs-dev; [
-          # C/C++ Build Tools
-          cmake
-          cmakeCurses
-          pkgconfig
-
-          # C++ Library
-          spdlog
-          eigen
-          boost
-          websocketpp
-          nlohmann_json
-
-          # Python Environment
-          (python3.withPackages (pyPkgs: with pyPkgs; [
-            pybind11
-            numpy
-          ]))          
-        ];
-
-        shellHook = ''
-          export PS1="$(echo -e '\uf1c0') {\[$(tput sgr0)\]\[\033[38;5;228m\]\w\[$(tput sgr0)\]\[\033[38;5;15m\]} (${name}) \\$ \[$(tput sgr0)\]"
-         '';
-      };
+      devShells.default = mkDevShellOf {};
+      devShells.py38 = mkDevShellOf { python = pkgs-dev.python38; };
+      devShells.py39 = mkDevShellOf { python = pkgs-dev.python39; };
     });
 }
