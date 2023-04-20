@@ -6,7 +6,6 @@
 , eigen
 , boost
 , buildDaemon ? false
-, buildPython ? false
 }:
 
 (overrideCC stdenv gcc12).mkDerivation rec {
@@ -17,6 +16,7 @@
 
   nativeBuildInputs = [ cmake ];
 
+  # TODO(breakds): Add dependencies for BUILD_DAEMON
   buildInputs = [
     eigen
     boost
@@ -25,7 +25,6 @@
   cmakeFlags = [
     "-DINCLUDE_EXAMPLES=ON"
     (if buildDaemon then "-DBUILD_DAEMON=ON" else "-DBUILD_DAEMON=OFF")
-    (if buildPython then "-DBUILD_PYTHON=ON" else "-DBUILD_PYTHON=OFF")
   ];
 
   meta = with lib; {
