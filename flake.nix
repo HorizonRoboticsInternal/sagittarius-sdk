@@ -28,6 +28,7 @@
     overlays.default = nixpkgs.lib.composeManyExtensions [
       self.overlays.dev
       (final: prev: {
+        sagittarius-sdk = final.callPackage ./nix/pkgs/sagittarius-sdk {};
         pythonPackagesExtensions = prev.pythonPackagesExtensions ++ [
           # TODO(breakds): Add the final python package here.
         ];
@@ -88,5 +89,9 @@
       devShells.default = mkDevShellOf {};
       devShells.py38 = mkDevShellOf { python = pkgs-dev.python38; };
       devShells.py39 = mkDevShellOf { python = pkgs-dev.python39; };
+
+      packages = {
+        default = pkgs.sagittarius-sdk;
+      };
     });
 }
