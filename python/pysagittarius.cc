@@ -58,7 +58,7 @@ PYBIND11_MODULE(pysagittarius, m) {
               compute joint positions
           )pbdoc",
           py::arg("position"),
-          py::arg("quaternion"))
+          py::arg("rpy"))
       .def(
           "compute_pos_quat",
           [](SagittariusArmKinematics &obj, py::array_t<float> joints) -> py::tuple {
