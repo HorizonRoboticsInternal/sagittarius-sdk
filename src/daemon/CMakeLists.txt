@@ -12,7 +12,7 @@ target_sources(daemon
     PUBLIC daemon.h
     PRIVATE daemon.cpp)
 target_link_libraries(daemon PUBLIC
-    sagittarius_sdk
+    sagittarius_sdk_static
     protocols
     websocketpp::websocketpp
     spdlog::spdlog)

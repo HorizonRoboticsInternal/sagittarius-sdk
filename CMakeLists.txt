@@ -120,6 +120,18 @@ target_link_libraries(sagittarius_sdk
     sdk_sagittarius_arm_common_serial
     sdk_sagittarius_arm_log)
 
+add_library(sagittarius_sdk_static STATIC)
+target_sources(sagittarius_sdk_static
+    PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include/sdk_sagittarius_arm/sdk_sagittarius_arm_real.h>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/sdk_sagittarius_arm/sdk_sagittarius_arm_real.h>
+    PRIVATE src/sdk_sagittarius_arm_real.cpp)
+target_link_libraries(sagittarius_sdk_static
+    PUBLIC
+    modern_robotics
+    sdk_sagittarius_arm_common_serial
+    sdk_sagittarius_arm_log)
+
 if (INCLUDE_EXAMPLES)
     add_subdirectory(examples)
 endif()
@@ -134,18 +146,6 @@ endif()
 #############################################################
 
 if (BUILD_PYTHON)
-    add_library(sagittarius_sdk_static STATIC)
-    target_sources(sagittarius_sdk_static
-        PUBLIC
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include/sdk_sagittarius_arm/sdk_sagittarius_arm_real.h>
-        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/sdk_sagittarius_arm/sdk_sagittarius_arm_real.h>
-        PRIVATE src/sdk_sagittarius_arm_real.cpp)
-    target_link_libraries(sagittarius_sdk_static
-        PUBLIC
-        modern_robotics
-        sdk_sagittarius_arm_common_serial
-        sdk_sagittarius_arm_log)
-    
     find_package(Python3 COMPONENTS Interpreter Development.Module REQUIRED)
     find_package(pybind11 CONFIG REQUIRED)
 
