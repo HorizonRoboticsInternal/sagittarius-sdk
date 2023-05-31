@@ -1,30 +1,39 @@
 #include <iostream>
-#include <boost/array.hpp>
-#include <boost/asio.hpp>
+
+#include "boost/asio.hpp"
 
 using boost::asio::ip::udp;
 
 int main() {
-    try {
-        boost::asio::io_service io_service;
+  try {
+    boost::asio::io_service io_service;
 
-        udp::resolver resolver(io_service);
-        udp::endpoint receiver_endpoint = *resolver.resolve({udp::v4(), "localhost", "12345"}).begin();
-        udp::socket socket(io_service);
-        socket.open(udp::v4());
+    udp::resolver resolver(io_service);
+    udp::endpoint receiver_endpoint =
+        *resolver.resolve({udp::v4(), "localhost", "30001"}).begin();
+    udp::socket socket(io_service);
+    socket.open(udp::v4());
 
-        socket.send_to(boost::asio::buffer("SETPO1"), receiver_endpoint);
+    char buffer[1024];
 
-        boost::array<char, 128> recv_buf;
-        udp::endpoint sender_endpoint;
+    while (true) {
+      std::cout << "SAGITTARIUS CLIENT> ";
+      std::cout.flush();
 
-        size_t len = socket.receive_from(boost::asio::buffer(recv_buf), sender_endpoint);
+      std::string message;
+      std::getline(std::cin, message);
 
-        std::cout.write(recv_buf.data(), len);
+      socket.send_to(boost::asio::buffer(message), receiver_endpoint);
+
+      // Wait for a response
+      udp::endpoint sender_endpoint;
+      size_t len = socket.receive_from(boost::asio::buffer(buffer), sender_endpoint);
+      std::cout.write(buffer, len);
+      std::cout << std::endl;
     }
-    catch (std::exception& e) {
-        std::cerr << e.what() << std::endl;
-    }
+  } catch (std::exception& e) {
+    std::cerr << e.what() << std::endl;
+  }
 
-    return 0;
+  return 0;
 }
