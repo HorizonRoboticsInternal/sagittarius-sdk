@@ -4,20 +4,22 @@
 #include <mutex>
 #include <vector>
 
+#include "boost/asio.hpp"
 #include "protocols.h"
 #include "sdk_sagittarius_arm/sdk_sagittarius_arm_real.h"
-#include "websocketpp/config/asio_no_tls.hpp"
-#include "websocketpp/server.hpp"
 
 namespace horizon {
 namespace sagittarius {
 
-class Daemon {
+class UDPDaemon {
  public:
-  using Server     = websocketpp::server<websocketpp::config::asio>;
-  using Connection = websocketpp::connection_hdl;
+  using udp = boost::asio::ip::udp;
 
-  Daemon(int port);
+  static constexpr char CMD_STATUS[] = "STATUS";
+  static constexpr char CMD_BOUNDS[] = "BOUNDS";
+  static constexpr char CMD_SETPOS[] = "SETPOS";
+
+  explicit UDPDaemon(int port);
 
   // @param baudrate - usually 1_000_000
   //
@@ -29,27 +31,20 @@ class Daemon {
   void Start(int baudrate, int velocity, int acceleration);
 
  private:
-  // ---------- Handlers ----------
-  void OnMessage(Connection conn, websocketpp::config::asio::message_type::ptr msg);
-  void OnOpen(Connection conn);
-  void OnClose(Connection conn);
-  void Send(Connection conn, const std::string &message);
+  // ---------- Actual Command Handlers ----------
 
-  // ---------- Processors ----------
-  // Command: BOUNDS
-  std::vector<PositionBound> GetBounds();
-
-  // Command: SETPOS
-  void SetPosition(const std::vector<float> &positions);
-  // Command: SET_EE
-  void SetEndEffector();
   // Command: STATUS
   ArmStatus GetStatus();
 
+  // Command: SETPOS
+  void SetPosition(const std::vector<float>& positions);
+
+  // Command: BOUNDS
+  std::vector<PositionBound> GetBounds();
+
   int port_;
-  Server server_;
-  std::mutex mutex_{};  // protects connections_ below.
-  std::vector<Connection> connections_{};
+  std::unique_ptr<boost::asio::io_service> io_service_{};
+  std::unique_ptr<udp::socket> socket_{};
 
   // Low level arm interface.
   std::unique_ptr<sdk_sagittarius_arm::SagittariusArmReal> arm_low_;
