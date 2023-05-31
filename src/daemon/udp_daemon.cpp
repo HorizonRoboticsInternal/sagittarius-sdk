@@ -18,11 +18,16 @@ std::vector<float> ParseArray(char* text, size_t len) {
     if (std::isdigit(text[i]) || text[i] == '.') {
       if (active) continue;
       start = i;
+      active = true;
     } else if (active) {
       char* end = text + i - 1;
       result.emplace_back(std::strtof(text + start, &end));
       active = false;
     }
+  }
+  if (active) {
+    char* end = text + len;
+    result.emplace_back(std::strtof(text + start, &end));
   }
   return result;
 }

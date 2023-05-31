@@ -1,3 +1,4 @@
+#include <cstring>
 #include <iostream>
 
 #include "boost/asio.hpp"
@@ -26,10 +27,12 @@ int main() {
       socket.send_to(boost::asio::buffer(message), receiver_endpoint);
 
       // Wait for a response
-      udp::endpoint sender_endpoint;
-      size_t len = socket.receive_from(boost::asio::buffer(buffer), sender_endpoint);
-      std::cout.write(buffer, len);
-      std::cout << std::endl;
+      if (strncmp(message.c_str(), "SETPOS", 6) != 0) {
+        udp::endpoint sender_endpoint;
+        size_t len = socket.receive_from(boost::asio::buffer(buffer), sender_endpoint);
+        std::cout.write(buffer, len);
+        std::cout << std::endl;
+      }
     }
   } catch (std::exception& e) {
     std::cerr << e.what() << std::endl;
