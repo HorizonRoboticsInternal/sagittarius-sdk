@@ -17,8 +17,15 @@ int main() {
 
     char buffer[1024];
 
+    std::cout << "This is C++ UDP client REPL for Sagittarius K1 Arm.\n";
+    std::cout << "There are 3 types of commands that you can use.\n\n";
+    std::cout << "STATUS\n";
+    std::cout << "BOUNDS\n";
+    std::cout << "SETPOS 0.1 0 0 0 0 0 0\n\n";
+    std::cout << "Here SETPOS needs to be followed by 7 floating numbers.\n\n";
+
     while (true) {
-      std::cout << "SAGITTARIUS CLIENT> ";
+      std::cout << "INPUT COMMAND> ";
       std::cout.flush();
 
       std::string message;
