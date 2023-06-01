@@ -112,7 +112,6 @@ ArmStatus UDPDaemon::GetStatus() {
       .gripper =
           {
               .radian = joints[6],
-              // TODO(breakds): Compute the distance from radian
               .distance = gripper_dist,
           },
   };
