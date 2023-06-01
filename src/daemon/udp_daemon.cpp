@@ -17,7 +17,7 @@ std::vector<float> ParseArray(char* text, size_t len) {
   for (size_t i = 0; i < len; ++i) {
     if (std::isdigit(text[i]) || text[i] == '.') {
       if (active) continue;
-      start = i;
+      start  = i;
       active = true;
     } else if (active) {
       char* end = text + i - 1;
@@ -86,6 +86,72 @@ void UDPDaemon::Start(int baudrate, int velocity, int acceleration) {
   }
 }
 
+void UDPDaemon::StartMock() {
+  try {
+    io_service_ = std::make_unique<boost::asio::io_service>();
+    socket_ =
+        std::make_unique<udp::socket>(*io_service_, udp::endpoint(udp::v4(), port_));
+  } catch (std::exception& e) {
+    spdlog::critical("Fatal error while creating the socket: {}", e.what());
+    std::exit(EXIT_FAILURE);
+  }
+
+  spdlog::info("Start mocking UDP Daemon");
+
+  // The messages should be very small, so the buffer size is sufficient.
+  char data[1024];
+  size_t content_size = 0;
+
+  while (true) {
+    udp::endpoint sender_endpoint;
+    // Below is a blocking call that returns as soon as there is data in. The
+    // information about the sender is stored in the sneder_endpoint and the
+    // message content will be in data.
+    try {
+      content_size = socket_->receive_from(boost::asio::buffer(data), sender_endpoint);
+      // TODO(breakds): Do I need to force set null ending?
+    } catch (std::exception& e) {
+      spdlog::error("Error in receiving from socket: {}", e.what());
+      continue;
+    }
+
+    if (std::strncmp(data, CMD_STATUS, 6) == 0) {
+      nlohmann::json status = ArmStatus{
+          .joint_positions = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
+          .gripper =
+              {
+                  .radian   = 0.0,
+                  .distance = 0.0,
+              },
+      };
+      socket_->send_to(boost::asio::buffer(status.dump()), sender_endpoint);
+    } else if (std::strncmp(data, CMD_BOUNDS, 6) == 0) {
+      nlohmann::json bounds = {
+          PositionBound(-1.0, 1.0),
+          PositionBound(-1.0, 1.0),
+          PositionBound(-1.0, 1.0),
+          PositionBound(-1.0, 1.0),
+          PositionBound(-1.0, 1.0),
+          PositionBound(-1.0, 1.0),
+          PositionBound(-0.068, 0.0),
+      };
+      socket_->send_to(boost::asio::buffer(bounds.dump()), sender_endpoint);
+    } else if (std::strncmp(data, CMD_SETPOS, 6) == 0) {
+      std::vector<float> positions = ParseArray(data + 8, content_size - 8);
+      spdlog::info("Set joint positions to [{}, {}, {}, {}, {}, {}] + {}",
+                   positions[0],
+                   positions[1],
+                   positions[2],
+                   positions[3],
+                   positions[4],
+                   positions[5],
+                   positions[6]);
+    } else {
+      spdlog::error("Invalid command: {}", data);
+    }
+  }
+}
+
 void UDPDaemon::SetPosition(const std::vector<float>& positions) {
   if (positions.size() != 7) {
     spdlog::error("SetPosition() cannot handle inputs with a size of {}",
@@ -111,7 +177,7 @@ ArmStatus UDPDaemon::GetStatus() {
           {joints[0], joints[1], joints[2], joints[3], joints[4], joints[5]},
       .gripper =
           {
-              .radian = joints[6],
+              .radian   = joints[6],
               .distance = gripper_dist,
           },
   };

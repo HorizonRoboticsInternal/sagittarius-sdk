@@ -30,6 +30,10 @@ class UDPDaemon {
   //                       between 0 and 254. Recommended <= 10.
   void Start(int baudrate, int velocity, int acceleration);
 
+  // This does not actually connect to the Sagittarius robotic arm and
+  // is useful for testing UDP networking.
+  void StartMock();
+
  private:
   // ---------- Actual Command Handlers ----------
 
