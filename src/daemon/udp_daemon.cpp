@@ -37,7 +37,10 @@ std::vector<float> ParseArray(char* text, size_t len) {
 UDPDaemon::UDPDaemon(int port) : port_(port) {
 }
 
-void UDPDaemon::Start(int baudrate, int velocity, int acceleration) {
+void UDPDaemon::Start(const std::string& device,
+                      int baudrate,
+                      int velocity,
+                      int acceleration) {
   try {
     io_service_ = std::make_unique<boost::asio::io_service>();
     socket_ =
@@ -48,7 +51,7 @@ void UDPDaemon::Start(int baudrate, int velocity, int acceleration) {
   }
 
   arm_low_ = std::make_unique<sdk_sagittarius_arm::SagittariusArmReal>(
-      "/dev/ttyACM0", baudrate, velocity, acceleration);
+      device.c_str(), baudrate, velocity, acceleration);
   arm_low_->ControlTorque("lock");
 
   spdlog::info("UDP Daemon for Sagittarius K1 Arm started successfully.");
