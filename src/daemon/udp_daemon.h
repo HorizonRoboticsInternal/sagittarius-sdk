@@ -3,6 +3,7 @@
 #include <memory>
 #include <mutex>
 #include <string>
+#include <thread>
 #include <vector>
 
 #include "boost/asio.hpp"
@@ -19,6 +20,7 @@ class UDPDaemon {
   static constexpr char CMD_STATUS[] = "STATUS";
   static constexpr char CMD_BOUNDS[] = "BOUNDS";
   static constexpr char CMD_SETPOS[] = "SETPOS";
+  static constexpr char CMD_LISTEN[] = "LISTEN";
 
   explicit UDPDaemon(int port);
 

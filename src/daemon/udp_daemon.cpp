@@ -1,9 +1,14 @@
 #include "udp_daemon.h"
 
+#include <atomic>
+#include <chrono>
 #include <cstdlib>
 #include <cstring>
+#include <string>
 
 #include "spdlog/spdlog.h"
+
+using boost::asio::ip::udp;
 
 namespace horizon {
 namespace sagittarius {
@@ -33,6 +38,53 @@ std::vector<float> ParseArray(char* text, size_t len) {
 }
 
 }  // namespace
+
+class UDPPusher {
+ public:
+  UDPPusher(sdk_sagittarius_arm::SagittariusArmReal* arm_low,
+            const std::string& address,
+            int port)
+      : arm_low_(arm_low), address_(address), port_(port), thread_([this]() { Run(); }) {
+  }
+
+  ~UDPPusher() {
+    kill_.store(true);
+    thread_.join();
+  }
+
+  void Run() {
+    boost::asio::io_service io_service;
+
+    udp::resolver resolver(io_service);
+    udp::endpoint listener_endpoint =
+        *resolver.resolve({udp::v4(), address_, std::to_string(port_)}).begin();
+    udp::socket socket(io_service);
+    socket.open(udp::v4());
+
+    boost::system::error_code error;
+
+    // TODO(breakds): When the listener died it should be detected
+    // here and the push thread should terminate.
+    if (arm_low_ == nullptr) {
+      for (int i = 0; i < 100; ++i) {
+        int ret = socket.send_to(
+            boost::asio::buffer(std::to_string(i)), listener_endpoint, 0, error);
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        if (kill_.load()) {
+          break;
+        }
+      }
+    }
+    socket.close();
+  }
+
+ private:
+  sdk_sagittarius_arm::SagittariusArmReal* arm_low_ = nullptr;
+  std::string address_;
+  int port_;
+  std::thread thread_;
+  std::atomic<bool> kill_{false};
+};
 
 UDPDaemon::UDPDaemon(int port) : port_(port) {
 }
@@ -100,6 +152,7 @@ void UDPDaemon::StartMock() {
   }
 
   spdlog::info("Start mocking UDP Daemon");
+  std::unique_ptr<UDPPusher> pusher;
 
   // The messages should be very small, so the buffer size is sufficient.
   char data[1024];
@@ -119,6 +172,7 @@ void UDPDaemon::StartMock() {
     }
 
     if (std::strncmp(data, CMD_STATUS, 6) == 0) {
+      spdlog::info("STATUS!");
       nlohmann::json status = ArmStatus{
           .joint_positions = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
           .gripper =
@@ -149,6 +203,11 @@ void UDPDaemon::StartMock() {
                    positions[4],
                    positions[5],
                    positions[6]);
+    } else if (std::strncmp(data, CMD_LISTEN, 6) == 0) {
+      std::string listener_address = sender_endpoint.address().to_string();
+      int listener_port            = std::stoi(std::string(data + 7, content_size - 7));
+      spdlog::info("Request LISTEN from {}:{}", listener_address, listener_port);
+      pusher = std::make_unique<UDPPusher>(nullptr, listener_address, listener_port);
     } else {
       spdlog::error("Invalid command: {}", data);
     }
