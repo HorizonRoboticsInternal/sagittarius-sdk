@@ -68,6 +68,7 @@ class UDPPusher {
     // TODO(breakds): When the listener died it should be detected
     // here and the push thread should terminate.
     if (arm_low_ == nullptr) {
+      // Mock case
       for (int i = 0; i < 100; ++i) {
         std::sprintf(data,
                      "%.3f %.3f %.3f %.3f %.3f %.3f %.3f",
@@ -81,6 +82,28 @@ class UDPPusher {
         int ret = socket.send_to(
             boost::asio::buffer(std::string(data)), listener_endpoint, 0, error);
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        if (kill_.load()) {
+          break;
+        }
+      }
+    } else {
+      // Actual case
+      float joints[7];
+      while (true) {
+        arm_low_->GetCurrentJointStatus(joints);
+
+        std::sprintf(data,
+                     "%.8f %.8f %.8f %.8f %.8f %.8f %.8f",
+                     joints[0],
+                     joints[1],
+                     joints[2],
+                     joints[3],
+                     joints[4],
+                     joints[5],
+                     joints[6]);
+        int ret = socket.send_to(
+            boost::asio::buffer(std::string(data)), listener_endpoint, 0, error);
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
         if (kill_.load()) {
           break;
         }
