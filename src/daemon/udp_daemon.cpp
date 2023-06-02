@@ -2,6 +2,7 @@
 
 #include <atomic>
 #include <chrono>
+#include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <string>
@@ -62,13 +63,23 @@ class UDPPusher {
     socket.open(udp::v4());
 
     boost::system::error_code error;
+    char data[1024];
 
     // TODO(breakds): When the listener died it should be detected
     // here and the push thread should terminate.
     if (arm_low_ == nullptr) {
       for (int i = 0; i < 100; ++i) {
+        std::sprintf(data,
+                     "%.3f %.3f %.3f %.3f %.3f %.3f %.3f",
+                     0.01f * i,
+                     0.02f * i,
+                     0.03f * i,
+                     0.04f * i,
+                     0.05f * i,
+                     0.06f * i,
+                     0.07f * i);
         int ret = socket.send_to(
-            boost::asio::buffer(std::to_string(i)), listener_endpoint, 0, error);
+            boost::asio::buffer(std::string(data)), listener_endpoint, 0, error);
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
         if (kill_.load()) {
           break;
@@ -172,7 +183,6 @@ void UDPDaemon::StartMock() {
     }
 
     if (std::strncmp(data, CMD_STATUS, 6) == 0) {
-      spdlog::info("STATUS!");
       nlohmann::json status = ArmStatus{
           .joint_positions = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
           .gripper =
