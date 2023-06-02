@@ -18,22 +18,10 @@ namespace {
 // Convert a string like "1.23 4.5 3.3" into a vector<float> like {1.23, 4.5, 3.3}.
 std::vector<float> ParseArray(char* text, size_t len) {
   std::vector<float> result{};
-  size_t start = 0;
-  bool active  = true;
-  for (size_t i = 0; i < len; ++i) {
-    if (std::isdigit(text[i]) || text[i] == '.') {
-      if (active) continue;
-      start  = i;
-      active = true;
-    } else if (active) {
-      char* end = text + i - 1;
-      result.emplace_back(std::strtof(text + start, &end));
-      active = false;
-    }
-  }
-  if (active) {
-    char* end = text + len;
-    result.emplace_back(std::strtof(text + start, &end));
+  char* start = text;
+  for (; start - text < len; ++start) {
+    if (!(std::isdigit(*start) || *start == '.' || *start == '-')) continue;
+    result.emplace_back(std::strtof(start, &start));
   }
   return result;
 }
@@ -167,7 +155,7 @@ void UDPDaemon::Start(const std::string& device,
       nlohmann::json bounds = GetBounds();
       socket_->send_to(boost::asio::buffer(bounds.dump()), sender_endpoint);
     } else if (std::strncmp(data, CMD_SETPOS, 6) == 0) {
-      std::vector<float> positions = ParseArray(data + 8, content_size - 8);
+      std::vector<float> positions = ParseArray(data + 7, content_size - 7);
       // TODO(breakds): Check positions has 7 numbers.
       SetPosition(positions);
     } else if (std::strncmp(data, CMD_LISTEN, 6) == 0) {
