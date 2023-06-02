@@ -141,6 +141,7 @@ void UDPDaemon::Start(const std::string& device,
   arm_low_->ControlTorque("lock");
 
   spdlog::info("UDP Daemon for Sagittarius K1 Arm started successfully.");
+  std::unique_ptr<UDPPusher> pusher;
 
   // The messages should be very small, so the buffer size is sufficient.
   char data[1024];
@@ -169,6 +170,12 @@ void UDPDaemon::Start(const std::string& device,
       std::vector<float> positions = ParseArray(data + 8, content_size - 8);
       // TODO(breakds): Check positions has 7 numbers.
       SetPosition(positions);
+    } else if (std::strncmp(data, CMD_LISTEN, 6) == 0) {
+      std::string listener_address = sender_endpoint.address().to_string();
+      int listener_port            = std::stoi(std::string(data + 7, content_size - 7));
+      spdlog::info("Request LISTEN from {}:{}", listener_address, listener_port);
+      pusher =
+          std::make_unique<UDPPusher>(arm_low_.get(), listener_address, listener_port);
     } else {
       spdlog::error("Invalid command: {}", data);
     }
