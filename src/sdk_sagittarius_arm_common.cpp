@@ -10,8 +10,10 @@
 #include <sys/time.h>
 #include <unistd.h>
 
+#include <chrono>
 #include <cstdio>
 #include <cstring>
+#include <iostream>
 
 #include "sdk_sagittarius_arm/sdk_sagittarius_arm_log.h"
 namespace sdk_sagittarius_arm {
@@ -98,12 +100,20 @@ void CSDarmCommon::StartReceiveSerail() {
 }
 void CSDarmCommon::LoopRcv() {
   while (1) {
+    // If this cycle time is long, e.g. 100ms, then all joint readings will stay
+    // the same during this whole time.
+    auto start = std::chrono::high_resolution_clock::now();
     LoopOnce();
+    auto end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> diff = end - start;
+    std::cout << "Time taken by LoopOnce() : " << diff.count() << " seconds" << std::endl;
   }
 }
 
 /// @brief  ROS Publishers JointState
 void CSDarmCommon::PublishJointStates(unsigned char* buf) {
+  // These assignments are not atomic, and can have race conditions, where
+  // the joint_status is read while it is being written to.
   joint_status[0] = (short(buf[0] | buf[1] << 8)) / 1800.0 * PI;
   joint_status[1] = (short(buf[2] | buf[3] << 8)) / 1800.0 * PI;
   joint_status[2] = (short(buf[4] | buf[5] << 8)) / 1800.0 * PI;
@@ -117,8 +127,8 @@ int CSDarmCommon::LoopOnce() {
   int dataLength = 0;
   int result     = GetDataGram(mRecvBuffer, RECV_BUFFER_SIZE, &dataLength);
   if (result != 0) {
-    // log_print(LOG_TYPE_ERROR, "sdk_sagittarius_arm - Read Error when
-    // getting datagram: %d", result);
+    // This error is never caught.
+    log_print(LOG_TYPE_ERROR, "sdk_sagittarius_arm - Read Error when getting datagram: %d", result);
     return -1;
   } else {
     if (dataLength > 0) {
@@ -149,6 +159,7 @@ int CSDarmCommon::LoopOnce() {
           {
             if (mFrameBuffer[3] == 0x01) {
               PublishJointStates(mFrameBuffer + 5);
+              std::cout << "Published joint_status." << std::endl;
               // ROS_INFO("ARM->ROS:length=%d
               // [%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f]",
               // mDataLength,

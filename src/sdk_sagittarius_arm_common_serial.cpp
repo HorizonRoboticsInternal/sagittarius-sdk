@@ -62,13 +62,13 @@ namespace sdk_sagittarius_arm
             return -1;
         }
 
-        options.c_cflag |= CLOCAL; //¿ØÖÆÄ£Ê½£¬±£Ö¤³ÌÐò²»»á³ÉÎª¶Ë¿ÚµÄÕ¼ÓÐÕß
-        //  options.c_cflag &= ~CLOCAL;//¿ØÖÆÄ£Ê½£¬±£Ö¤³ÌÐò²»»á³ÉÎª¶Ë¿ÚµÄÕ¼ÓÐÕß
-        options.c_cflag |= CREAD; //¿ØÖÆÄ£Ê½£¬Ê¹ÄÜ¶Ë¿Ú¶ÁÈ¡ÊäÈëµÄÊý¾Ý
-        options.c_cflag &= ~CRTSCTS; //ÎÞÁ÷¿ØÖÆ
-        options.c_cflag &= ~CSIZE; //¿ØÖÆÄ£Ê½£¬ÆÁ±Î×Ö·û´óÐ¡Î»
-        options.c_cflag |= CS8;     // 8Î»
-        options.c_cflag &= ~PARENB; //ÎÞÐ£Ñé
+        options.c_cflag |= CLOCAL;    // 混乱模式，保证程序不会成为端口的占有者。
+        //  options.c_cflag &= ~CLOCAL;// 混乱模式，保证程序不会成为端口的占有者。
+        options.c_cflag |= CREAD;     // 控制模式，使端口能够读取输入的数据。
+        options.c_cflag &= ~CRTSCTS;  // 无流控制 No Flow Control
+        options.c_cflag &= ~CSIZE;    // 控制模式，设置字符大小位。
+        options.c_cflag |= CS8;       // 8位
+        options.c_cflag &= ~PARENB;   // 无校验
         options.c_cflag &= ~CSTOPB; // 1Í£Ö¹Î»
         options.c_oflag &= ~OPOST; //Êä³öÄ£Ê½£¬Ô­Ê¼Êý¾ÝÊä³ö
         options.c_cc[VMIN] = 0; //¿ØÖÆ×Ö·û, ËùÒª¶ÁÈ¡×Ö·ûµÄ×îÐ¡ÊýÁ¿
