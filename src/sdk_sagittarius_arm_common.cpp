@@ -159,7 +159,7 @@ int CSDarmCommon::LoopOnce() {
           {
             if (mFrameBuffer[3] == 0x01) {
               PublishJointStates(mFrameBuffer + 5);
-              std::cout << "Published joint_status." << std::endl;
+              // std::cout << "Published joint_status." << std::endl;
               // ROS_INFO("ARM->ROS:length=%d
               // [%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f]",
               // mDataLength,
