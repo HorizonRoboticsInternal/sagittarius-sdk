@@ -102,11 +102,11 @@ void CSDarmCommon::LoopRcv() {
   while (1) {
     // If this cycle time is long, e.g. 100ms, then all joint readings will stay
     // the same during this whole time.
-    auto start = std::chrono::high_resolution_clock::now();
+    // auto start = std::chrono::high_resolution_clock::now();
     LoopOnce();
-    auto end = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double> diff = end - start;
-    std::cout << "Time taken by LoopOnce() : " << diff.count() << " seconds" << std::endl;
+    // auto end = std::chrono::high_resolution_clock::now();
+    // std::chrono::duration<double> diff = end - start;
+    // std::cout << "LoopOnce: total time: " << diff.count() << " seconds" << std::endl;
   }
 }
 

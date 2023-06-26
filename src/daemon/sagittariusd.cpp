@@ -36,7 +36,7 @@ int main() {
     daemon.StartMock();
   } else {
     std::string device = GetEnv<std::string>("SAGITTARIUSD_DEVICE", "/dev/ttyACM0");
-    int baudrate       = GetEnv<int>("SAGITTARIUSD_BAUDRATE", 1'000'000);
+    int baudrate       = GetEnv<int>("SAGITTARIUSD_BAUDRATE", 1'500'000);
     int velocity       = GetEnv<int>("SAGITTARIUSD_VELOCITY", 1'600);
     int acceleration   = GetEnv<int>("SAGITTARIUSD_ACCELERATION", 20);
     daemon.Start(device, baudrate, velocity, acceleration);

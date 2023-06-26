@@ -5,6 +5,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <iostream>
 #include <string>
 
 #include "spdlog/spdlog.h"
@@ -91,7 +92,7 @@ class UDPPusher {
                      joints[6]);
         int ret = socket.send_to(
             boost::asio::buffer(std::string(data)), listener_endpoint, 0, error);
-        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        std::this_thread::sleep_for(std::chrono::milliseconds(20));
         if (kill_.load()) {
           break;
         }
@@ -141,7 +142,11 @@ void UDPDaemon::Start(const std::string& device,
     // information about the sender is stored in the sneder_endpoint and the
     // message content will be in data.
     try {
+      // auto start = std::chrono::high_resolution_clock::now();
       content_size = socket_->receive_from(boost::asio::buffer(data), sender_endpoint);
+      // auto end = std::chrono::high_resolution_clock::now();
+      // std::chrono::duration<double> diff = end - start;
+      // std::cout << "UDPDaemon: receive cmd from client took: " << diff.count() << " seconds" << std::endl;
       // TODO(breakds): Do I need to force set null ending?
     } catch (std::exception& e) {
       spdlog::error("Error in receiving from socket: {}", e.what());
@@ -157,7 +162,11 @@ void UDPDaemon::Start(const std::string& device,
     } else if (std::strncmp(data, CMD_SETPOS, 6) == 0) {
       std::vector<float> positions = ParseArray(data + 7, content_size - 7);
       // TODO(breakds): Check positions has 7 numbers.
+      // auto start = std::chrono::high_resolution_clock::now();
       SetPosition(positions);
+      // auto end = std::chrono::high_resolution_clock::now();
+      // std::chrono::duration<double> diff = end - start;
+      // std::cout << "UDPDaemon: SetPosition took: " << diff.count() << " seconds" << std::endl;
     } else if (std::strncmp(data, CMD_LISTEN, 6) == 0) {
       std::string listener_address = sender_endpoint.address().to_string();
       int listener_port            = std::stoi(std::string(data + 7, content_size - 7));

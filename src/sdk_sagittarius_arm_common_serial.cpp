@@ -10,6 +10,9 @@
 #include <boost/asio.hpp>
 #include <iterator>
 
+#include <chrono>
+#include <iostream>
+
 namespace sdk_sagittarius_arm
 {
     CSDarmCommonSerial::CSDarmCommonSerial(const std::string& serialname,
@@ -499,7 +502,11 @@ namespace sdk_sagittarius_arm
             time.tv_sec = 1; // mTimeLimit;
             time.tv_usec = 0;
             //使用select实现串口的多路通信
+            // auto start = std::chrono::high_resolution_clock::now();
             fs_sel = select(mFd + 1, &fs_read, NULL, NULL, &time);
+            // auto end = std::chrono::high_resolution_clock::now();
+            // std::chrono::duration<double> diff = end - start;
+            // std::cout << "GetDataGram: select() time: " << diff.count() << " seconds" << std::endl;
             if (fs_sel > 0)
             {
                 if (FD_ISSET(mFd, &fs_read))
