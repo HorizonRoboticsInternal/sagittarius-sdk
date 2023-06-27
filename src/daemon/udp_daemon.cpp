@@ -77,28 +77,37 @@ class UDPPusher {
       }
     } else {
       // Actual case
-      float joints[7];
+      GetStatusAndSend(0);  // initial send
       while (true) {
-        arm_low_->GetCurrentJointStatus(joints);
-
-        std::sprintf(data,
-                     "%.8f %.8f %.8f %.8f %.8f %.8f %.8f",
-                     joints[0],
-                     joints[1],
-                     joints[2],
-                     joints[3],
-                     joints[4],
-                     joints[5],
-                     joints[6]);
-        int ret = socket.send_to(
-            boost::asio::buffer(std::string(data)), listener_endpoint, 0, error);
-        std::this_thread::sleep_for(std::chrono::milliseconds(20));
+        GetStatusAndSend(-1);
         if (kill_.load()) {
           break;
         }
       }
     }
     socket.close();
+  }
+
+  void GetStatusAndSend(int ms=20) {
+    if ms < 0:
+      // disable reading
+      sleep(10);
+      return;
+    float joints[7];
+    arm_low_->GetCurrentJointStatus(joints);
+
+    std::sprintf(data,
+                 "%.8f %.8f %.8f %.8f %.8f %.8f %.8f",
+                 joints[0],
+                 joints[1],
+                 joints[2],
+                 joints[3],
+                 joints[4],
+                 joints[5],
+                 joints[6]);
+    int ret = socket.send_to(
+        boost::asio::buffer(std::string(data)), listener_endpoint, 0, error);
+    std::this_thread::sleep_for(std::chrono::milliseconds(ms));
   }
 
  private:
@@ -166,7 +175,14 @@ void UDPDaemon::Start(const std::string& device,
       SetPosition(positions);
       // auto end = std::chrono::high_resolution_clock::now();
       // std::chrono::duration<double> diff = end - start;
-      // std::cout << "UDPDaemon: SetPosition took: " << diff.count() << " seconds" << std::endl;
+      // std::cout << "UDPDaemon: SetPosition took: " << diff.count() << " seconds" <<
+      // std::endl;
+      auto start = std::chrono::high_resolution_clock::now();
+      pusher->GetStatusAndSend(0);
+      auto end = std::chrono::high_resolution_clock::now();
+      std::chrono::duration<double> diff = end - start;
+      std::cout << "UDPDaemon: GetState took: " << diff.count() << " seconds" <<
+      std::endl;
     } else if (std::strncmp(data, CMD_LISTEN, 6) == 0) {
       std::string listener_address = sender_endpoint.address().to_string();
       int listener_port            = std::stoi(std::string(data + 7, content_size - 7));
