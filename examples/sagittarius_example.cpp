@@ -7,7 +7,10 @@
 #include "sdk_sagittarius_arm/modern_robotics.h"
 #include "sdk_sagittarius_arm/sdk_sagittarius_arm_log.h"
 #include "sdk_sagittarius_arm/sdk_sagittarius_arm_real.h"
+#include <chrono>
 #include <iostream>
+#include <thread>
+
 
 int main(int argc, char** argv)
 {
@@ -36,7 +39,11 @@ int main(int argc, char** argv)
     log_print(LOG_TYPE_INFO, "Sagittarius driver is running\n"); // 输出常规信息
     while (1)
     {
-        sleep(1);
+        std::this_thread::sleep_for(std::chrono::milliseconds(20));
+        sar.arm_set_gripper_linear_position(0.0); //设置夹爪的角度
+        sar.GetCurrentJointStatus(js); //获取当前各个舵机的弧度到js
+        continue;
+
         sar.arm_set_gripper_linear_position(0.0); //设置夹爪的角度
         sar.GetCurrentJointStatus(js); //获取当前各个舵机的弧度到js
         // printf("----%f %f %f %f %f %f %f \n",js[0], js[1], js[2], js[3],

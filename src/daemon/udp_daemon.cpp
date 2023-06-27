@@ -34,7 +34,8 @@ class UDPPusher {
   UDPPusher(sdk_sagittarius_arm::SagittariusArmReal* arm_low,
             const std::string& address,
             int port)
-      : arm_low_(arm_low), address_(address), port_(port), thread_([this]() { Run(); }) {
+      : arm_low_(arm_low), address_(address), port_(port),
+        socket_(io_service_), thread_([this]() { Run(); }) {
   }
 
   ~UDPPusher() {
@@ -43,13 +44,10 @@ class UDPPusher {
   }
 
   void Run() {
-    boost::asio::io_service io_service;
-
-    udp::resolver resolver(io_service);
-    udp::endpoint listener_endpoint =
+    udp::resolver resolver(io_service_);
+    listener_endpoint_ =
         *resolver.resolve({udp::v4(), address_, std::to_string(port_)}).begin();
-    udp::socket socket(io_service);
-    socket.open(udp::v4());
+    socket_.open(udp::v4());
 
     boost::system::error_code error;
     char data[1024];
@@ -68,8 +66,8 @@ class UDPPusher {
                      0.05f * i,
                      0.06f * i,
                      0.07f * i);
-        int ret = socket.send_to(
-            boost::asio::buffer(std::string(data)), listener_endpoint, 0, error);
+        int ret = socket_.send_to(
+            boost::asio::buffer(std::string(data)), listener_endpoint_, 0, error);
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
         if (kill_.load()) {
           break;
@@ -85,14 +83,17 @@ class UDPPusher {
         }
       }
     }
-    socket.close();
+    socket_.close();
   }
 
   void GetStatusAndSend(int ms=20) {
-    if ms < 0:
+    if (ms < 0) {
       // disable reading
       sleep(10);
       return;
+    }
+    boost::system::error_code error;
+    char data[1024];
     float joints[7];
     arm_low_->GetCurrentJointStatus(joints);
 
@@ -105,8 +106,8 @@ class UDPPusher {
                  joints[4],
                  joints[5],
                  joints[6]);
-    int ret = socket.send_to(
-        boost::asio::buffer(std::string(data)), listener_endpoint, 0, error);
+    int ret = socket_.send_to(
+        boost::asio::buffer(std::string(data)), listener_endpoint_, 0, error);
     std::this_thread::sleep_for(std::chrono::milliseconds(ms));
   }
 
@@ -114,6 +115,9 @@ class UDPPusher {
   sdk_sagittarius_arm::SagittariusArmReal* arm_low_ = nullptr;
   std::string address_;
   int port_;
+  boost::asio::io_service io_service_;
+  udp::endpoint listener_endpoint_;
+  udp::socket socket_;
   std::thread thread_;
   std::atomic<bool> kill_{false};
 };
@@ -171,18 +175,15 @@ void UDPDaemon::Start(const std::string& device,
     } else if (std::strncmp(data, CMD_SETPOS, 6) == 0) {
       std::vector<float> positions = ParseArray(data + 7, content_size - 7);
       // TODO(breakds): Check positions has 7 numbers.
-      // auto start = std::chrono::high_resolution_clock::now();
       SetPosition(positions);
-      // auto end = std::chrono::high_resolution_clock::now();
-      // std::chrono::duration<double> diff = end - start;
-      // std::cout << "UDPDaemon: SetPosition took: " << diff.count() << " seconds" <<
-      // std::endl;
-      auto start = std::chrono::high_resolution_clock::now();
-      pusher->GetStatusAndSend(0);
-      auto end = std::chrono::high_resolution_clock::now();
-      std::chrono::duration<double> diff = end - start;
-      std::cout << "UDPDaemon: GetState took: " << diff.count() << " seconds" <<
-      std::endl;
+      // read after 15ms wait, to give policy 2ms, network 1ms and 2ms buffer time.
+      for (int i = 0; i < 1; ++i) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(15));
+
+      // GetStatusAndSend simply reads from a buffer, instead of real I/O to the arm,
+      // so is always super fast.
+        pusher->GetStatusAndSend(0);
+      }
     } else if (std::strncmp(data, CMD_LISTEN, 6) == 0) {
       std::string listener_address = sender_endpoint.address().to_string();
       int listener_port            = std::stoi(std::string(data + 7, content_size - 7));
