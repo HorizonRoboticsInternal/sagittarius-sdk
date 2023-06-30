@@ -28,8 +28,11 @@ T GetEnv(const char *name, T default_value) {
   }
 }
 
-int main() {
-  UDPDaemon daemon(GetEnv<int>("SAGITTARIUSD_PORT", 9211));
+int main(int argc, char**argv) {
+  int sync = 0;
+  if (argc > 1)
+    sync = atoi(argv[1]);
+  UDPDaemon daemon(GetEnv<int>("SAGITTARIUSD_PORT", 9211), (bool) sync);
 
   if (GetEnv<bool>("SAGITTARIUSD_MOCK", false)) {
     // Run in mock mode

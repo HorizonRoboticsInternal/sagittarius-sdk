@@ -22,7 +22,7 @@ class UDPDaemon {
   static constexpr char CMD_SETPOS[] = "SETPOS";
   static constexpr char CMD_LISTEN[] = "LISTEN";
 
-  explicit UDPDaemon(int port);
+  explicit UDPDaemon(int port, bool sync=false);
 
   // @param baudrate - usually 1_000_000
   //
@@ -55,6 +55,7 @@ class UDPDaemon {
 
   // Low level arm interface.
   std::unique_ptr<sdk_sagittarius_arm::SagittariusArmReal> arm_low_;
+  bool sync_mode_ = false;
 };
 
 }  // namespace sagittarius

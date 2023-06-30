@@ -41,6 +41,7 @@ int main(int argc, char** argv)
     {
         std::this_thread::sleep_for(std::chrono::milliseconds(20));
         sar.arm_set_gripper_linear_position(0.0); //设置夹爪的角度
+        std::this_thread::sleep_for(std::chrono::milliseconds(20));
         sar.GetCurrentJointStatus(js); //获取当前各个舵机的弧度到js
         continue;
 

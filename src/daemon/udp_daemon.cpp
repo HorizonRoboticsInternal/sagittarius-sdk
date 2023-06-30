@@ -33,8 +33,9 @@ class UDPPusher {
  public:
   UDPPusher(sdk_sagittarius_arm::SagittariusArmReal* arm_low,
             const std::string& address,
-            int port)
-      : arm_low_(arm_low), address_(address), port_(port),
+            int port,
+            bool sync=false)
+      : arm_low_(arm_low), address_(address), port_(port), sync_mode_(sync),
         socket_(io_service_), thread_([this]() { Run(); }) {
   }
 
@@ -77,7 +78,7 @@ class UDPPusher {
       // Actual case
       GetStatusAndSend(0);  // initial send
       while (true) {
-        GetStatusAndSend(-1);
+        GetStatusAndSend(sync_mode_ ? -1 : 20);
         if (kill_.load()) {
           break;
         }
@@ -112,6 +113,8 @@ class UDPPusher {
   }
 
  private:
+  // When true, write command and then read state
+  bool sync_mode_ = false;
   sdk_sagittarius_arm::SagittariusArmReal* arm_low_ = nullptr;
   std::string address_;
   int port_;
@@ -122,7 +125,7 @@ class UDPPusher {
   std::atomic<bool> kill_{false};
 };
 
-UDPDaemon::UDPDaemon(int port) : port_(port) {
+UDPDaemon::UDPDaemon(int port, bool sync) : port_(port), sync_mode_(sync) {
 }
 
 void UDPDaemon::Start(const std::string& device,
@@ -177,19 +180,21 @@ void UDPDaemon::Start(const std::string& device,
       // TODO(breakds): Check positions has 7 numbers.
       SetPosition(positions);
       // read after 15ms wait, to give policy 2ms, network 1ms and 2ms buffer time.
-      for (int i = 0; i < 1; ++i) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(15));
+      if (sync_mode_) {
+        for (int i = 0; i < 1; ++i) {
+          std::this_thread::sleep_for(std::chrono::milliseconds(80));
 
-      // GetStatusAndSend simply reads from a buffer, instead of real I/O to the arm,
-      // so is always super fast.
-        pusher->GetStatusAndSend(0);
+          // GetStatusAndSend simply reads from a buffer, instead of real I/O to the arm,
+          // so is always super fast.
+          pusher->GetStatusAndSend(0);
+        }
       }
     } else if (std::strncmp(data, CMD_LISTEN, 6) == 0) {
       std::string listener_address = sender_endpoint.address().to_string();
       int listener_port            = std::stoi(std::string(data + 7, content_size - 7));
       spdlog::info("Request LISTEN from {}:{}", listener_address, listener_port);
       pusher =
-          std::make_unique<UDPPusher>(arm_low_.get(), listener_address, listener_port);
+          std::make_unique<UDPPusher>(arm_low_.get(), listener_address, listener_port, sync_mode_);
     } else {
       spdlog::error("Invalid command: {}", data);
     }
