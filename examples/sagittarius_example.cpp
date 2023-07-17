@@ -37,10 +37,25 @@ int main(int argc, char** argv)
 
     // sar.SetServoTorque(torque); // 扭力设置
     log_print(LOG_TYPE_INFO, "Sagittarius driver is running\n"); // 输出常规信息
+    int i = 0;
     while (1)
     {
+        ++i;
         std::this_thread::sleep_for(std::chrono::milliseconds(20));
-        sar.arm_set_gripper_linear_position(0.0); //设置夹爪的角度
+        int period = 100;
+        int p = i % period;
+        if (p > period / 2)
+            p = period - p;
+        float scale = 0.1;
+        joint_positions[0] = p * scale * 0.2;
+        joint_positions[1] = p * scale * 0.05;
+        joint_positions[2] = p * scale * 0.1;
+        joint_positions[3] = p * scale * 0.1;
+        joint_positions[4] = p * scale * 0.1;
+        joint_positions[5] = p * scale * 0.1;
+        joint_positions[6] = -p * scale * 0.0007;
+        sar.SetAllServoRadian(joint_positions); //设置6个舵机的弧度
+        sar.arm_set_gripper_linear_position(joint_positions[6]); //设置夹爪的角度
         std::this_thread::sleep_for(std::chrono::milliseconds(20));
         sar.GetCurrentJointStatus(js); //获取当前各个舵机的弧度到js
         continue;

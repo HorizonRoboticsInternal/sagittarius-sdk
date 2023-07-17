@@ -182,7 +182,7 @@ void UDPDaemon::Start(const std::string& device,
       // read after 15ms wait, to give policy 2ms, network 1ms and 2ms buffer time.
       if (sync_mode_) {
         for (int i = 0; i < 1; ++i) {
-          std::this_thread::sleep_for(std::chrono::milliseconds(80));
+          std::this_thread::sleep_for(std::chrono::milliseconds(20));
 
           // GetStatusAndSend simply reads from a buffer, instead of real I/O to the arm,
           // so is always super fast.

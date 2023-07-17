@@ -507,8 +507,8 @@ namespace sdk_sagittarius_arm
             auto end = std::chrono::high_resolution_clock::now();
             std::chrono::duration<double> diff = end - start;
             auto dt = diff.count();
-            if (dt > 0.05)
-                std::cout << "GetDataGram: select() time too long: " << dt << " seconds" << std::endl;
+            if (dt > 0.02)
+                std::cout << std::chrono::system_clock::to_time_t(start) << " GetDataGram: select() time too long: " << dt << " seconds" << std::endl;
             if (fs_sel > 0)
             {
                 if (FD_ISSET(mFd, &fs_read))
