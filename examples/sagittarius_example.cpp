@@ -59,8 +59,10 @@ int main(int argc, char** argv)
             if (i % period == 0) printf("----cmd: j[1] = 0;\n");
         }
 
+        // Send command takes less than 4e-05 seconds
         sar.SetAllServoRadian(joint_positions); //设置6个舵机的弧度
         sar.arm_set_gripper_linear_position(joint_positions[6]); //设置夹爪的角度
+
         for (int j = 0; j < 4; ++j) {
             std::this_thread::sleep_for(std::chrono::milliseconds(20));
             sar.GetCurrentJointStatus(js);  // 获取当前各个舵机的弧度到js
